@@ -19,12 +19,15 @@ function love.load()
 
     --load all items
     startGame()
+    loadKeys()
     -- loadBackground()
     loadMenu()
     -- loadPlayer()
 end
 
 function love.update(dt)
+    updateKeys(dt)
+    updateMenu(dt)
     -- if not mainLoop:isPlaying() then
 	-- 	love.audio.play(mainLoop)
 	-- end
