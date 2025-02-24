@@ -1,61 +1,49 @@
-function startGame()
+function loadGame()
     game = {
-        -- round = 0,
-        -- unlocks = {},
-        -- money = 0,
+        days = 0,
+        pictures = {},
         state = {
             ["menu"] = true,
-            -- ["paused"] = false,
-            -- ["running"] = false,
-            -- ["ended"] = false
-        }
+            ["dayCycle"] = false,
+            ["nightCycle"] = false,
+            -- DayToNight and NightToDay are loading/transition scenes
+            ["dayToNight"] = false,
+            ["nightToDay"] = false,
+        },
+        settingsState = false
     }
 end
 
-function continueRun()
-    -- if love.filesystem.getInfo("saveGame.lua") then
-    --     jsonData = love.filesystem.read("saveGame.lua")
-    --     data = json.decode(jsonData)
-    --     print(data)
-    --     game = {
-    --         round = data.round,
-    --         unlocks = data.unlocks,
-    --         money = data.money,
-    --         state = data.state
-    --     }
-    --     returnToDeck()
-    --     resetRound()
-    --     enemy.speed = enemy.speed + (game.round * 0.05)
-    --     enemy.bulletSpeed = enemy.bulletSpeed + (game.round * 0.2)
-    --     enemyAttackPeriod = enemyAttackPeriod - (game.round * 0.2)
-    --     love.graphics.clear()
-    -- end
+function loadSave()
+    if love.filesystem.getInfo("saveGame.lua") then
+        jsonData = love.filesystem.read("saveGame.lua")
+        data = json.decode(jsonData)
+        print(data)
+        -- Note: State is saved right before returning to menu
+        game = {
+            pictures = data.pictures,
+            days = data.days,
+            state = data.state
+        }
+        love.graphics.clear()
+    end
 end
 
-function resetGame()
-    -- game.round = 0
-    -- game.unlocks = {}
-    -- game.money = 0
-end
-
-function startNewRun()
-    -- _ = love.filesystem.remove("saveGame.lua")
-    -- resetGame()
-    -- loadCards()
-    -- resetRound()
-    -- changeGameState("running")
-    -- love.graphics.clear()
+function enterGame()
+    if game.state.nightCycle then
+        changeGameState("nightCycle")
+    else
+        changeGameState("dayCycle")
+    end
+    love.graphics.clear()
 end
 
 function changeGameState(state)
     game.state.menu = state == "menu"
-    -- game.state.shop = state == "shop"
-    -- game.state.running = state == "running"
-    -- game.state.ended = state == "ended"
-
-    -- if game.state.ended then
-    --     resetGame()
-    -- end
+    game.state.dayCycle = state == "dayCycle"
+    game.state.dayCycle = state == "dayToNight"
+    game.state.nightCycle = state == "nightCycle"
+    game.state.nightCycle = state == "nightToDay"
 end
 
 function saveGame()

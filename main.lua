@@ -1,12 +1,12 @@
 -- require "objects"
--- require "components"
+require "components"
 require "states"
 
 function love.load()
     --libraries
     cron = require 'libraries/cron/cron'
     anim8 = require 'libraries/anim8/anim8'
-    json = require('libraries/json4lua/json/json')
+    json = require 'libraries/json4lua/json/json'
 
     --music
     -- mainLoop = love.audio.newSource("music/main.wav", "stream")
@@ -18,7 +18,8 @@ function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
 
     --load all items
-    startGame()
+    loadGame()
+    loadSave()
     loadKeys()
     -- loadBackground()
     loadMenu()
@@ -26,24 +27,24 @@ function love.load()
 end
 
 function love.update(dt)
-    updateKeys(dt)
-    updateMenu(dt)
+    -- updateButtons(dt)
+    -- updateKeys(dt)
     -- if not mainLoop:isPlaying() then
 	-- 	love.audio.play(mainLoop)
 	-- end
-    -- if game.state.running then
-    --     updatePlayer(dt)
-    -- end
-    -- if game.state.shop then
-    --     updateShop(dt)
-    -- end
+    if game.state.dayCycle or game.state.nightCycle then
+        updatePlayer(dt)
+    end
+    if game.state.menu then
+        updateMenu(dt)
+    end
 end
 
 function love.draw()
-    if game.state.menu then
-        drawMenu()
-    end
-    -- if game.state.running then
-        
-    -- end
+    if game.state.menu then drawMenu() end 
+    if game.state.dayCycle then drawDayCycle() end
+    if game.state.dayToNight then drawDayToNight() end
+    if game.state.nightCycle then drawNightCycle() end
+    if game.state.nightToDay then drawNightToDay() end
+    if game.settingsState then drawSettings() end
 end

@@ -8,42 +8,51 @@ local font = nil
 
 function loadMenu()
     font = love.graphics.newFont("sprites/yoster.ttf", 32)
-    table.insert(buttons, newButton(
+    -- button menu variables
+    menuButtons = {}
+    menuVars = {
+        BtnOrder = {0, 0},
+        BtnX = 0,
+        BtnY = 0
+    }
+    
+    -- populate menu buttons
+    table.insert(menuButtons, newButton(
         "Say CHEESE!",
         {0, 2},
         function()
-            -- enterGame()
-        end
+            enterGame()
+        end,
+        menuVars
     ))
-    table.insert(buttons, newButton(
+    table.insert(menuButtons, newButton(
         "Settings",
         {0, 1},
         function()
-            -- settings()
-        end
+            enterSettings()
+        end,
+        menuVars
     ))
-    table.insert(buttons, newButton(
+    table.insert(menuButtons, newButton(
         "Exit",
         {0, 0},
         function()
+            saveGame()
             love.event.quit(0)
-        end
+        end,
+        menuVars
     ))
 end
 
 function updateMenu(dt)
-    for i, button in ipairs(buttons) do
-        if globalEnter and button.hot then
-            button.fn()
-        end
-    end
+    updateButtons(dt, menuButtons, menuVars)
 end
 
 function drawMenu()
     local BUTTON_WIDTH = screenWidth * 1/3 
-    local TOTAL_HEIGHT = (BUTTON_HEIGHT + BUTTON_MARGIN) * #buttons
+    local TOTAL_HEIGHT = (BUTTON_HEIGHT + BUTTON_MARGIN) * #menuButtons
 
-    for i, button in ipairs(buttons) do
+    for i, button in ipairs(menuButtons) do
         local bx = (screenWidth - BUTTON_WIDTH) / 2
         local by = (screenHeight - TOTAL_HEIGHT) / 2 + ((i - 1) * (BUTTON_HEIGHT + BUTTON_MARGIN))
 
