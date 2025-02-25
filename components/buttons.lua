@@ -1,40 +1,35 @@
-function loadButtons()
+function LoadButtons()
+    Buttons = {}
 end
 
-function updateButtons(dt, buttons, buttonVars)
-
-    for i, button in ipairs(buttons) do
+function UpdateButtons(dt, buttonList, buttonVars)
+    for i, button in ipairs(buttonList) do
         button.hot = button.position[1] == buttonVars.BtnOrder[1] and button.position[2] == buttonVars.BtnOrder[2]
-        if globalKeys['up'] then 
-            btnUp(buttonVars)
-            globalKeys['up'] = false
+        if GlobalKeys['up'] then 
+            BtnUp(buttonVars)
+            GlobalKeys['up'] = false
         end
-        if globalKeys['down'] then 
-            btnDown(buttonVars)
-            globalKeys['down'] = false
+        if GlobalKeys['down'] then 
+            BtnDown(buttonVars)
+            GlobalKeys['down'] = false
         end
-        if globalKeys['left'] then 
-            btnLeft(buttonVars)
-            globalKeys['left'] = false
+        if GlobalKeys['left'] then 
+            BtnLeft(buttonVars)
+            GlobalKeys['left'] = false
         end
-        if globalKeys['right'] then 
-            btnRight(buttonVars)
-            globalKeys['right'] = false
+        if GlobalKeys['right'] then 
+            BtnRight(buttonVars)
+            GlobalKeys['right'] = false
         end
-        if globalKeys['return'] and button.hot then
+        if GlobalKeys['return'] and button.hot then
             button.fn()
-            globalKeys['return'] = false
+            GlobalKeys['return'] = false
         end
     end
 end
 
-function newButton(text, position, fn, buttonVars)
-    if buttonVars.BtnX < position[1] then
-        buttonVars.BtnX = position[1]
-    end
-    if buttonVars.BtnY < position[2] then
-        buttonVars.BtnY = position[2]
-    end
+function NewButton(text, position, fn, buttonVars)
+    CreateBtn2DPos(buttonVars, tostring(position[1]), tostring(position[2]))
     return {
         position = position,
         text = text,
@@ -43,26 +38,89 @@ function newButton(text, position, fn, buttonVars)
     }
 end
 
-function btnUp(buttonVars)
-    if buttonVars.BtnOrder[2] < buttonVars.BtnY then
+function NewButtonParams(name)
+    Buttons[name] = {
+        BtnList = {},
+        BtnVars = {
+            BtnOrder = {0,0},
+            BtnC2R = {},
+            BtnR2C = {}
+        }
+    }
+end
+
+function InsertBntList(name, text, row, col, fn)
+    table.insert(Buttons[name].BtnList, NewButton(
+        text,
+        {row, col},
+        fn,
+        Buttons[name].BtnVars
+    ))
+end
+
+function CreateBtn2DPos(buttonVars, posX, posY)
+    local min, max
+    
+    -- BtnC2R
+    if buttonVars.BtnC2R[posY] == nil then
+        min, max = posX, posX
+    else 
+        min = buttonVars.BtnC2R[posY][1]
+        max = buttonVars.BtnC2R[posY][2]
+        if buttonVars.BtnC2R[posY][2] < posX then
+            max = posX
+        end
+        if buttonVars.BtnC2R[posY][1] > posX then
+            min = posX
+        end
+    end
+    buttonVars.BtnC2R[posY] = {min, max}
+    
+    -- BtnR2C
+    if buttonVars.BtnR2C[posX] == nil then
+        min, max = posY, posY
+    else
+        min = buttonVars.BtnR2C[posX][1]
+        max = buttonVars.BtnR2C[posX][2]
+        if buttonVars.BtnR2C[posX][2] < posY then
+            max = posY
+        end
+        if buttonVars.BtnR2C[posX][1] > posY then
+            min = posY
+        end
+    end
+    buttonVars.BtnR2C[posX] = {min, max}
+end
+
+local function unpackPos(type, buttonVars, condition)
+    if type == "R2C" then
+        return tonumber(buttonVars.BtnR2C[tostring(buttonVars.BtnOrder[1])][condition])
+    end
+    if type == "C2R" then
+        return tonumber(buttonVars.BtnC2R[tostring(buttonVars.BtnOrder[2])][condition])
+    end
+end
+
+function BtnUp(buttonVars)
+    if buttonVars.BtnOrder[2] < unpackPos("R2C", buttonVars, 2) then
         buttonVars.BtnOrder[2] = buttonVars.BtnOrder[2] + 1
     end
 end
 
-function btnDown(buttonVars)
-    if buttonVars.BtnOrder[2] ~= 0 then
+function BtnDown(buttonVars)
+    if buttonVars.BtnOrder[2] > unpackPos("R2C", buttonVars, 1) then
         buttonVars.BtnOrder[2] = buttonVars.BtnOrder[2] - 1
     end
 end
 
-function btnLeft(buttonVars)
-    if buttonVars.BtnOrder[1] ~= 0 then
-        buttonVars.BtnOrder[1] = buttonVars.BtnOrder[1] - 1
+function BtnRight(buttonVars)
+    if buttonVars.BtnOrder[1] < unpackPos("C2R", buttonVars, 2) then
+        buttonVars.BtnOrder[1] = buttonVars.BtnOrder[1] + 1
     end
 end
 
-function btnRight(buttonVars)
-    if buttonVars.BtnOrder[1] < buttonVars.BtnX then
-        buttonVars.BtnOrder[1] = buttonVars.BtnOrder[1] + 1
+function BtnLeft(buttonVars)
+    if buttonVars.BtnOrder[1] > unpackPos("C2R", buttonVars, 1) then
+        buttonVars.BtnOrder[1] = buttonVars.BtnOrder[1] - 1
     end
 end

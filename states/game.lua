@@ -1,5 +1,5 @@
-function loadGame()
-    game = {
+function LoadGame()
+    Game = {
         days = 0,
         pictures = {},
         state = {
@@ -14,13 +14,13 @@ function loadGame()
     }
 end
 
-function loadSave()
+function LoadSave()
     if love.filesystem.getInfo("saveGame.lua") then
-        jsonData = love.filesystem.read("saveGame.lua")
-        data = json.decode(jsonData)
+        local jsonData = love.filesystem.read("saveGame.lua")
+        local data = json.decode(jsonData)
         print(data)
         -- Note: State is saved right before returning to menu
-        game = {
+        Game = {
             pictures = data.pictures,
             days = data.days,
             state = data.state
@@ -29,26 +29,26 @@ function loadSave()
     end
 end
 
-function enterGame()
-    if game.state.nightCycle then
-        changeGameState("nightCycle")
+function EnterGame()
+    if Game.state.nightCycle then
+        ChangeGameState("nightCycle")
     else
-        changeGameState("dayCycle")
+        ChangeGameState("dayCycle")
     end
     love.graphics.clear()
 end
 
-function changeGameState(state)
-    game.state.menu = state == "menu"
-    game.state.dayCycle = state == "dayCycle"
-    game.state.dayCycle = state == "dayToNight"
-    game.state.nightCycle = state == "nightCycle"
-    game.state.nightCycle = state == "nightToDay"
+function ChangeGameState(state)
+    Game.state.menu = state == "menu"
+    Game.state.dayCycle = state == "dayCycle"
+    Game.state.dayToNight = state == "dayToNight"
+    Game.state.nightCycle = state == "nightCycle"
+    Game.state.nightToDay = state == "nightToDay"
 end
 
-function saveGame()
-    data = {
-        state = game.state,
+function SaveGame()
+    local data = {
+        state = Game.state,
     }
     love.filesystem.write("saveGame.lua", json.encode(data))
 end

@@ -1,6 +1,5 @@
-
-function loadKeys()
-    globalKeys = {
+function LoadKeys()
+    GlobalKeys = {
         ['return'] = false,
         ['up'] = false,
         ['down'] = false,
@@ -11,7 +10,7 @@ function loadKeys()
 end
 
 function love.keypressed(key)
-    if globalKeys[key] ~= nil then
-        globalKeys[key] = true
+    if GlobalKeys[key] ~= nil then
+        GlobalKeys[key] = true
     end
 end
