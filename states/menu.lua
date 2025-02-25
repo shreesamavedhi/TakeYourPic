@@ -1,11 +1,18 @@
--- Magic Numbers!
-local HOT_COLOR = {0.8, 0.8, 0.9, 1.0}
-local BUTTON_COLOR = {0.4, 0.4, 0.5, 1.0}
-local TEXT_COLOR = {0, 0, 0, 1}
-local BUTTON_HEIGHT = 64
-local BUTTON_MARGIN = 16
-local MENU_FONT = love.graphics.newFont("sprites/yoster.ttf", 32)
+--[[
+    Menu state module
+    Handles the main menu interface including button creation, layout, and interaction
+]]
 
+-- UI Constants
+local HOT_COLOR = {0.8, 0.8, 0.9, 1.0}      -- Color for highlighted menu items
+local BUTTON_COLOR = {0.4, 0.4, 0.5, 1.0}    -- Default menu button color
+local TEXT_COLOR = {0, 0, 0, 1}              -- Menu text color
+local BUTTON_HEIGHT = 64                      -- Height of menu buttons
+local BUTTON_MARGIN = 16                      -- Margin between menu buttons
+local MENU_FONT = love.graphics.newFont("sprites/yoster.ttf", 32)  -- Menu font
+
+--- Initializes the main menu
+--- Creates and configures menu buttons with their respective actions
 function LoadMenu()
     -- button menu variables
     NewButtonParams("menu")
@@ -15,12 +22,16 @@ function LoadMenu()
     InsertBntList("menu", "Exit", 0, 0, function() SaveGame() love.event.quit(0) end)
 end
 
+--- Updates the menu state
+--- @param dt number Delta time since last update
 function UpdateMenu(dt)
     if Game.settingsState ~= true then
         UpdateButtons(dt, Buttons["menu"].BtnList, Buttons["menu"].BtnVars)
     end
 end
 
+--- Draws the menu interface
+--- Renders buttons and handles their visual states
 function DrawMenu()
     local BUTTON_WIDTH = ScreenWidth * 1/3 
     local TOTAL_HEIGHT = (BUTTON_HEIGHT + BUTTON_MARGIN) * #Buttons["menu"].BtnList
