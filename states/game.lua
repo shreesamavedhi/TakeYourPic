@@ -16,8 +16,8 @@ function LoadGame()
             -- DayToNight and NightToDay are loading/transition scenes
             ["dayToNight"] = false,
             ["nightToDay"] = false,
-        },
-        settingsState = false
+            ["paused"] = false,
+        }
     }
 end
 
@@ -26,7 +26,7 @@ end
 function LoadSave()
     if love.filesystem.getInfo("saveGame.lua") then
         local jsonData = love.filesystem.read("saveGame.lua")
-        local data = json.decode(jsonData)
+        local data = Json.decode(jsonData)
         -- print(data)
         -- Note: State is saved right before returning to menu
         Game = {
@@ -65,5 +65,5 @@ function SaveGame()
     local data = {
         state = Game.state,
     }
-    love.filesystem.write("saveGame.lua", json.encode(data))
+    love.filesystem.write("saveGame.lua", Json.encode(data))
 end

@@ -15,18 +15,18 @@ local MENU_FONT = love.graphics.newFont("sprites/yoster.ttf", 32)  -- Menu font
 --- Creates and configures menu buttons with their respective actions
 function LoadMenu()
     -- button menu variables
-    NewButtonParams("menu")
+    NewButtonParams("menu", EmptyButtonFunction)
     -- populate menu buttons
-    InsertBntList("menu", "Say CHEESE!", 0, 2, function() EnterGame() end)
-    InsertBntList("menu", "Settings", 0, 1, function() EnterSettings() end)
-    InsertBntList("menu", "Exit", 0, 0, function() SaveGame() love.event.quit(0) end)
+    InsertRetBtnList("menu", "Say CHEESE!", 0, 2, function() EnterGame() end)
+    InsertRetBtnList("menu", "Settings", 0, 1, function() EnterSettings() end)
+    InsertRetBtnList("menu", "Exit", 0, 0, function() SaveGame() love.event.quit(0) end)
 end
 
 --- Updates the menu state
 --- @param dt number Delta time since last update
 function UpdateMenu(dt)
-    if Game.settingsState ~= true then
-        UpdateButtons(dt, Buttons["menu"].BtnList, Buttons["menu"].BtnVars)
+    if Game.state.menu and not Game.state.paused then
+        UpdateButtons(dt, "menu")
     end
 end
 

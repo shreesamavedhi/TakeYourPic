@@ -3,7 +3,7 @@
     Handles creation, updating, and navigation of buttons in the UI
 ]]
 
--- Local helper functions
+----------------------------------- Local helper functions------------------------------------
 
 --- Creates a 2D position mapping for buttons
 --- @param buttonVars2D table The button variables table to store positions
@@ -29,15 +29,19 @@ end
 --- Creates a new button instance
 --- @param text string Button display text
 --- @param position table {x, y} coordinates for the button
---- @param fn function Callback function when button is activated
+--- @param fn function Callback function when button is activated (return key)
+--- @param rFn function Callback function when button is activated (right key)
+--- @param lFn function Callback function when button is activated (left key)
 --- @param buttonVars table Button variables including state
-local function newButton(text, position, fn, buttonVars)
+local function newButton(text, position, fn, rFn, lFn, buttonVars)
     createBtn2DPos(buttonVars.BtnR2C, tostring(position[1]), tostring(position[2]))
     createBtn2DPos(buttonVars.BtnC2R, tostring(position[2]), tostring(position[1]))
     return {
         position = position,
         text = text,
-        fn = fn,
+        enterFn = fn,
+        rightFn = rFn,
+        leftFn = lFn,
         hot = position == buttonVars.BtnOrder,
     }
 end
@@ -80,67 +84,101 @@ local function btnLeft(buttonVars)
     end
 end
 
--- Global Functions
-
---- Initializes the global Buttons table
-function LoadButtons()
-    Buttons = {}
+--- Inserts a new button into a named button group
+--- @param name string Name of the button group
+--- @param text string Button display text
+--- @param row number Row position
+--- @param col number Column position
+--- @param fn function Callback function for enter key
+--- @param rFn function Callback function for right key
+--- @param lFn function Callback function for left key
+local function insertBntList(name, text, row, col, fn, rFn, lFn)
+    table.insert(Buttons[name].BtnList, newButton(
+        text,
+        {row, col},
+        fn,
+        rFn,
+        lFn,
+        Buttons[name].BtnVars
+    ))
 end
 
---- Updates button states and handles input
---- @param dt number Delta time
---- @param buttonList table List of buttons to update
---- @param buttonVars table Button variables including state
-function UpdateButtons(dt, buttonList, buttonVars)
-    for i, button in ipairs(buttonList) do
-        button.hot = button.position[1] == buttonVars.BtnOrder[1] and button.position[2] == buttonVars.BtnOrder[2]
-        if GlobalKeys['up'] then 
-            btnUp(buttonVars)
-            GlobalKeys['up'] = false
-        end
-        if GlobalKeys['down'] then 
-            btnDown(buttonVars)
-            GlobalKeys['down'] = false
-        end
-        if GlobalKeys['left'] then 
-            btnLeft(buttonVars)
-            GlobalKeys['left'] = false
-        end
-        if GlobalKeys['right'] then 
-            btnRight(buttonVars)
-            GlobalKeys['right'] = false
-        end
-        if GlobalKeys['return'] and button.hot then
-            button.fn()
-            GlobalKeys['return'] = false
-        end
-    end
-end
+------------------------------------ Global Functions-----------------------------------------
 
 --- Creates new button parameters for a named group
 --- @param name string Name of the button group
-function NewButtonParams(name)
+--- @param exitFn function function to exit button group
+function NewButtonParams(name, exitFn)
     Buttons[name] = {
         BtnList = {},
         BtnVars = {
             BtnOrder = {0,0},
             BtnC2R = {},
             BtnR2C = {}
-        }
+        },
+        ExitFn = exitFn
     }
 end
 
---- Inserts a new button into a named button group
---- @param name string Name of the button group
---- @param text string Button display text
---- @param row number Row position
---- @param col number Column position
---- @param fn function Callback function
-function InsertBntList(name, text, row, col, fn)
-    table.insert(Buttons[name].BtnList, newButton(
-        text,
-        {row, col},
-        fn,
-        Buttons[name].BtnVars
-    ))
+function InsertRetBtnList(name, text, row, col, fn)
+    insertBntList(name, text, row, col, fn, EmptyButtonFunction, EmptyButtonFunction)
+end
+
+function InsertRLBtnList(name, text, row, col, rFn, lFn)
+    insertBntList(name, text, row, col, EmptyButtonFunction, rFn, lFn)
+end
+
+--- Initializes the global Buttons table
+function LoadButtons()
+    Buttons = {}
+    EmptyButtonFunction = function() end
+end
+
+--- Updates button states and handles input
+--- @param dt number Delta time
+--- @param btnGroup string button group type
+function UpdateButtons(dt, btnGroup)
+    local buttonList = Buttons[btnGroup].BtnList
+    local buttonVars = Buttons[btnGroup].BtnVars
+    for _, button in ipairs(buttonList) do
+        button.hot = button.position[1] == buttonVars.BtnOrder[1] and button.position[2] == buttonVars.BtnOrder[2]
+        if not button.hot then
+            goto continue
+        end
+
+        if IsKeyPressed('up') then 
+            btnUp(buttonVars)
+            SetKeyPressOff('up')
+        end
+        if IsKeyPressed('down') then 
+            btnDown(buttonVars)
+            SetKeyPressOff('down')
+        end
+        if IsKeyPressed('left') then
+            button.leftFn()
+            btnLeft(buttonVars)
+            SetKeyPressOff('left')
+        end
+        if IsKeyPressed('right') then
+            button.rightFn()
+            btnRight(buttonVars)
+            SetKeyPressOff('right')
+        end
+        -- return and z both trigger enterFn
+        if IsKeyPressed('return') then
+            button.enterFn()
+            SetKeyPressOff('return')
+        end
+        if IsKeyPressed('z') then
+            button.enterFn()
+            SetKeyPressOff('z')
+        end
+        -- Escape triggers exitFn
+        if IsKeyPressed('escape') then
+            Buttons[btnGroup].ExitFn()
+            SetKeyPressOff('escape')
+        end
+
+        ::continue::
+    end
 end
