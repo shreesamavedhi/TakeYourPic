@@ -16,10 +16,10 @@ local function createBtn2DPos(buttonVars2D, posKey, posVal)
     else 
         min = buttonVars2D[posKey][1]
         max = buttonVars2D[posKey][2]
-        if buttonVars2D[posKey][2] < posVal then
+        if tonumber(max) < tonumber(posVal) then
             max = posVal
         end
-        if buttonVars2D[posKey][1] > posVal then
+        if tonumber(min) > tonumber(posVal) then
             min = posVal
         end
     end
@@ -126,6 +126,25 @@ end
 
 function InsertRLBtnList(name, text, row, col, rFn, lFn)
     insertBntList(name, text, row, col, EmptyButtonFunction, rFn, lFn)
+end
+
+function IsKeyForBtnSelect(checkKey)
+    local selectKeys = {
+        'up', 'right', 'down', 'left', 'return', 'z', 'escape'
+    }
+    for _, value in pairs(selectKeys) do
+        if value == checkKey then
+            return true
+        end
+    end
+    return false
+end
+
+function IsBtnSelectState()
+    if Game.state.paused or Game.state.menu or IsSettingsState() then
+        return true
+    end
+    return false
 end
 
 --- Initializes the global Buttons table

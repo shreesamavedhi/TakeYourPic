@@ -5,9 +5,9 @@
 ]]
 
 ---------------------------------- UI Constants--------------------------------------------
-local HOT_COLOR = {0.8, 0.8, 0.9, 1.0}      -- Color for highlighted UI elements
-local BUTTON_COLOR = {0.4, 0.4, 0.5, 1.0}    -- Default button color
-local TEXT_COLOR = {0, 0, 0, 1}              -- Default text color
+local HOT_COLOR = rgb(142, 195, 148)          -- Color for highlighted UI elements
+local BUTTON_COLOR = rgb(27, 116, 55)         -- Default button color
+local TEXT_COLOR = rgb(0, 0, 0)               -- Default text color
 local BUTTON_HEIGHT = 30                      -- Height of UI buttons
 local BUTTON_MARGIN = 2                       -- Margin between UI elements
 local SETTING_FONT = love.graphics.newFont("sprites/yoster.ttf", 12)  -- Font for settings UI
@@ -30,13 +30,18 @@ end
 --- Enters the settings menu state
 function EnterSettings()
     Settings.state.menu = true
-    Game.state.paused = true
 end
 
 --- Exits the settings menu state
 function ExitSettings()
     Settings.state.menu = false
-    Game.state.paused = false
+end
+
+function IsSettingsState()
+    if Settings.state.menu or Settings.state.audio or Settings.state.visual or Settings.state.control then
+        return true
+    end
+    return false
 end
 
 --- Updates the settings state to a new state

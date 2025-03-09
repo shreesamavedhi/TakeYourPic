@@ -4,12 +4,16 @@
 ]]
 
 -- UI Constants
-local HOT_COLOR = {0.8, 0.8, 0.9, 1.0}      -- Color for highlighted menu items
-local BUTTON_COLOR = {0.4, 0.4, 0.5, 1.0}    -- Default menu button color
-local TEXT_COLOR = {0, 0, 0, 1}              -- Menu text color
+local HOT_COLOR = rgb(142, 195, 148)      -- Color for highlighted menu items
+local BUTTON_COLOR = rgb(27, 116, 55)    -- Default menu button color
+local TEXT_COLOR = rgb(0, 0, 0)              -- Menu text color
 local BUTTON_HEIGHT = 64                      -- Height of menu buttons
 local BUTTON_MARGIN = 16                      -- Margin between menu buttons
 local MENU_FONT = love.graphics.newFont("sprites/yoster.ttf", 32)  -- Menu font
+
+function EnterMenu()
+    ChangeGameState("menu")
+end
 
 --- Initializes the main menu
 --- Creates and configures menu buttons with their respective actions
@@ -19,13 +23,13 @@ function LoadMenu()
     -- populate menu buttons
     InsertRetBtnList("menu", "Say CHEESE!", 0, 2, function() EnterGame() end)
     InsertRetBtnList("menu", "Settings", 0, 1, function() EnterSettings() end)
-    InsertRetBtnList("menu", "Exit", 0, 0, function() SaveGame() love.event.quit(0) end)
+    InsertRetBtnList("menu", "Exit", 0, 0, function() love.event.quit(0) end)
 end
 
 --- Updates the menu state
 --- @param dt number Delta time since last update
 function UpdateMenu(dt)
-    if Game.state.menu and not Game.state.paused then
+    if Game.state.menu and not IsSettingsState() then
         UpdateButtons(dt, "menu")
     end
 end

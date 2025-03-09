@@ -28,32 +28,47 @@ function LoadKeys()
 
         -- Special keys
         ['space'] = false, ['return'] = false, ['escape'] = false,
-        ['backspace'] = false, ['tab'] = false, ['capslock'] = false,
-        ['lshift'] = false, ['rshift'] = false, ['lctrl'] = false,
-        ['rctrl'] = false, ['lalt'] = false, ['ralt'] = false,
-        ['lgui'] = false, ['rgui'] = false, ['menu'] = false,
-        ['`'] = false, ['-'] = false, ['='] = false, ['['] = false,
-        [']'] = false, ['\\'] = false, [';'] = false, ['\''] = false,
-        [','] = false, ['.'] = false, ['/'] = false,
+        ['backspace'] = false, ['tab'] = false, 
 
         -- Arrow keys
         ['up'] = false, ['down'] = false, ['left'] = false, ['right'] = false,
-
-        -- Numpad
-        ['kp0'] = false, ['kp1'] = false, ['kp2'] = false, ['kp3'] = false,
-        ['kp4'] = false, ['kp5'] = false, ['kp6'] = false, ['kp7'] = false,
-        ['kp8'] = false, ['kp9'] = false,
-        ['kp.'] = false, ['kp/'] = false, ['kp*'] = false, ['kp-'] = false,
-        ['kp+'] = false, ['kpenter'] = false, ['kp='] = false,
     }
+    KeyPressed = false
+    LastKeyPressed = nil
+
+    -- Key repeat settings
+    KeyRepeatDelay = 0.5  -- Initial delay before key starts repeating (in seconds)
+    KeyRepeatInterval = 0.1  -- Interval between key repeats (in seconds)
+    KeyHoldTime = {}  -- Track how long each key has been held
 end
 
 --- LÖVE2D callback for key press events
 --- @param key string The key that was pressed
 function love.keypressed(key)
-    if GlobalKeys[key] ~= nil then
-        GlobalKeys[key] = true
+    local isBind, _ = IsKeyBind(key)
+    local menuKeys = IsKeyForBtnSelect(key) and IsBtnSelectState()
+    local gameKeys = isBind and not IsBtnSelectState()
+    local bindKeys = IsBindMode()
+    if GlobalKeys[key] ~= nil and (menuKeys or gameKeys or bindKeys) then
+        KeyPressed = true -- Used for key binding
+        LastKeyPressed = key -- Used for key binding
+        GlobalKeys[key] = true -- Track and handle every key press
+        KeyHoldTime[key] = 0  -- Initialize hold time when key is pressed
     end
+end
+
+function WaitForKeyPress()
+    -- should only wait for 5 seconds
+    local startTime = love.timer.getTime()
+    local timeout = 5
+    while not IsKeyPressed do
+        love.timer.sleep(0.1)
+        if love.timer.getTime() - startTime >= timeout then
+            return nil
+        end
+    end
+    KeyPressed = false
+    return LastKeyPressed
 end
 
 -- Check if key has been pressed
@@ -64,4 +79,33 @@ end
 -- Set Key Press to false after event is handled
 function SetKeyPressOff(key)
     GlobalKeys[key] = false
+end
+
+--- LÖVE2D callback for key release events
+function love.keyreleased(key)
+    if GlobalKeys[key] ~= nil then
+        KeyPressed = false
+        KeyHoldTime[key] = nil  -- Clear hold time when key is released
+    end
+end
+
+--- Update function to handle key repeats
+--- @param dt number Delta time since last frame
+function UpdateKeys(dt)
+    for key, _ in pairs(GlobalKeys) do
+        if KeyPressed and LastKeyPressed == key and KeyHoldTime[key] then
+            KeyHoldTime[key] = KeyHoldTime[key] + dt
+            
+            -- Check if we should trigger a key repeat
+            if KeyHoldTime[key] >= KeyRepeatDelay then
+                local repeatCount = math.floor((KeyHoldTime[key] - KeyRepeatDelay) / KeyRepeatInterval)
+                local shouldRepeat = repeatCount > 0 and 
+                    (KeyHoldTime[key] - KeyRepeatDelay) % KeyRepeatInterval < dt
+                
+                if shouldRepeat then
+                    GlobalKeys[key] = true
+                end
+            end
+        end
+    end
 end
