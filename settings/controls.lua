@@ -17,22 +17,9 @@ local function resetDefaults()
     Settings.control.keyBindings = defaults
 end
 
-
-
 local function newKeyBind(key)
-    Settings.control.bindMode = true
-    local pressed = WaitForKeyPress()
-    if pressed == nil then
-        -- key press timed out
-        return
-    end
-    local alreadyBound, otherKey = IsKeyBind(pressed)
-    if alreadyBound then
-        -- replace other key bind
-        Settings.control.keyBindings[otherKey] = nil
-    end
-    -- populate new bind
-    Settings.control.keyBindings[key] = pressed
+    Settings.control.bindKey = key
+    StartWaitingForKey()
 end
 
 ---------------------------------- Global settings functions----------------------------------
@@ -56,7 +43,7 @@ function LoadControlSettings()
             lock = "c",
             dash = "leftShift"
         },
-        bindMode = false
+        bindKey = nil
     }
     -- button control variables
     NewButtonParams("controlSettings", function() ExitControlSettings() end)
@@ -76,7 +63,10 @@ function LoadControlSettings()
 end
 
 function IsBindMode()
-    return Settings.control.bindMode
+    if Settings.control.bindKey ~= nil then
+        return true
+    end
+    return false
 end
 
 function IsKeyBind(bind)
@@ -92,8 +82,25 @@ function IsKeyBindPressed(keyBind)
     return IsKeyPressed(Settings.control.keyBindings[keyBind])
 end
 
+function UpdateKeyBind(dt)
+    local result = CheckKeyPress()
+    if result == false or result == nil then
+        return 
+    end
+    local alreadyBound, otherKey = IsKeyBind(result)
+    if alreadyBound then
+        Settings.control.keyBindings[otherKey] = nil
+    end
+    Settings.control.keyBindings[Settings.control.bindKey] = result
+    Settings.control.bindKey = nil
+end
+
 function UpdateControlSettings(dt)
-    UpdateButtons(dt, "controlSettings")
+    if IsBindMode() then
+        UpdateKeyBind(dt)
+    else
+        UpdateButtons(dt, "controlSettings")
+    end
 end
 
 function DrawControlSettings()

@@ -35,6 +35,8 @@ function LoadKeys()
     }
     KeyPressed = false
     LastKeyPressed = nil
+    WaitingForKey = false
+    WaitStartTime = 0
 
     -- Key repeat settings
     KeyRepeatDelay = 0.5  -- Initial delay before key starts repeating (in seconds)
@@ -57,18 +59,40 @@ function love.keypressed(key)
     end
 end
 
-function WaitForKeyPress()
-    -- should only wait for 5 seconds
-    local startTime = love.timer.getTime()
-    local timeout = 5
-    while not IsKeyPressed do
-        love.timer.sleep(0.1)
-        if love.timer.getTime() - startTime >= timeout then
-            return nil
-        end
-    end
+--- Clear all key states
+function ClearKeyStates()
     KeyPressed = false
-    return LastKeyPressed
+    LastKeyPressed = nil
+    for key, _ in pairs(GlobalKeys) do
+        GlobalKeys[key] = false
+        KeyHoldTime[key] = nil
+    end
+end
+
+function StartWaitingForKey()
+    ClearKeyStates()
+    WaitingForKey = true
+    WaitStartTime = love.timer.getTime()
+end
+
+function CheckKeyPress()
+    if not WaitingForKey then
+        return nil
+    end
+    
+    -- Check for timeout
+    if love.timer.getTime() - WaitStartTime >= 5 then
+        WaitingForKey = false
+        return nil
+    end
+    
+    -- Check if we got a key
+    if KeyPressed and LastKeyPressed then
+        WaitingForKey = false
+        return LastKeyPressed
+    end
+    
+    return false  -- Still waiting
 end
 
 -- Check if key has been pressed
